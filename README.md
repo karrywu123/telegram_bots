@@ -1,2 +1,3 @@
 # telegram_bots
 用gin框架做一个telegram机器人报警的服务端，
+telegram机器人 自己从botfarther上面申请
