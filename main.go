@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"sync"
 	"telegram_bots/api"
-	"telegram_bots/set_rand"
+	"telegram_bots/jwt"
 	"time"
 )
 // 定义接收数据的结构体
@@ -15,8 +14,7 @@ type Sendmessage struct {
 	Message string `form:"message" json:"message" uri:"message" xml:"message" binding:"required"`
 }
 var chandata = make(chan string, 100)
-var wg sync.WaitGroup
-var lock sync.Mutex
+var botdata =make(chan string ,3)
 
 func handfunc(c *gin.Context){
 	var sendmassage Sendmessage
@@ -34,36 +32,49 @@ func handfunc(c *gin.Context){
 	}
 	c.String(http.StatusOK, "发送的消息为 ："+ massage)
 }
-func goroutinePool(n int) {
-	wg.Add(n)
-	for i := 1; i <= n; i++ {
-		go func(gi int) {
-			fmt.Printf("第%d个goroutine启动！！！\n", gi)
-			for {
+
+func recv(gi int,bots []string) {
+		fmt.Printf("第%d个goroutine启动！！！\n", gi)
+		for {
+			select {
+			case data := <-chandata:
+				fmt.Printf("我是第%d个goroutine，从管道中取出了：%s\n", gi, data)
 				select {
-				case data := <-chandata:
-					fmt.Printf("我是第%d 个goroutine，从管道中取出了消息：%s\n", gi, data)
-					lock.Lock() // 加锁
-					botid :=set_rand.Rand_bot_id()
-					fmt.Println("发消息的随机机器人为 :"+botid)
-          //chat_ID 自己创建telegram群的id 
-					api.SendMessage(data,botid,chat_ID)
-					lock.Unlock() // 解锁
+				case bdata := <-botdata:
+					fmt.Println("机器人为"+bdata+"发送的消息为",data)
+					api.SendMessage(data,bdata,546127039)
 				default:
-					time.Sleep(time.Second * 1)
+					for _,v:=range bots{
+						botdata<-v
+					}
 				}
+			default:
+				time.Sleep(time.Second * 1)
 			}
-		}(i)
-		wg.Done()
+
+		}
+}
+
+func goroutinePool(n int,bots []string) {
+	for i := 1; i <= n; i++ {
+		go recv(i,bots)
 	}
-	wg.Wait()
 }
 
 func main(){
-
-	goroutinePool(5)
+	bots := make([]string, 0)
+	bots = append(bots, "bot_id01","bot_id02","bot_id03")
+	fmt.Println(len(botdata))
+	goroutinePool(3,bots)
+	//jwt测试
+	aToken, rToken, _ :=jwt.GenToken(123)
+	fmt.Println(aToken)
+	fmt.Println(rToken)
+	mc,_:=jwt.ParseToken(aToken)
+	fmt.Println(mc.UserID,mc)
+	//////
 	r := gin.Default()
-	r.GET("/v1/sendmassage/:message",handfunc)
+	r.GET("/v1/sendmessage/:message",handfunc)
 	//监听端口默认为8080
 	r.Run(":8888")
 }
