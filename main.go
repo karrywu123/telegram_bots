@@ -42,7 +42,7 @@ func recv(gi int,bots []string) {
 				select {
 				case bdata := <-botdata:
 					fmt.Println("机器人为"+bdata+"发送的消息为",data)
-					api.SendMessage(data,bdata,546127039)
+					api.SendMessage(data,bdata,chat_id)
 				default:
 					for _,v:=range bots{
 						botdata<-v
