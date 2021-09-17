@@ -5,6 +5,7 @@ import(
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -76,7 +77,11 @@ func SendMessage(message, botID string, chat_id int64){
 	values1["chat_id"] = -chat_id
 	values1["text"] = message
 	js,_ := json.Marshal(values1)
-	req,_ := http.NewRequest("POST",urls,strings.NewReader(string(js)))
+	req,err := http.NewRequest("POST",urls,strings.NewReader(string(js)))
+	if err != nil {
+		fmt.Println("Fatal error ", err.Error())
+		os.Exit(502)
+	}
 	for key,value := range values {
 		req.Header.Add(key,value)
 	}
@@ -85,6 +90,7 @@ func SendMessage(message, botID string, chat_id int64){
 	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Fatal error ", err.Error())
+		os.Exit(502)
 	}
 
 	fmt.Println(string(content))
