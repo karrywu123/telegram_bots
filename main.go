@@ -44,7 +44,7 @@ func recv(gi int,bots []string) {
 					rdata,err:=api.SendMessage(data,bdata,chat_id)
 					if err != nil {
 						fmt.Println("Fatal error ", err.Error())
-						continue
+						break
 					}
 					fmt.Println("机器人为"+bdata+"发送的消息为",data)
 					fmt.Println(rdata)
