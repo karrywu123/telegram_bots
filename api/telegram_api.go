@@ -1,11 +1,11 @@
 package api
-import(
+
+import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 )
 
@@ -62,7 +62,7 @@ func getUpdates(botID string){
 	fmt.Println(string(content))
 }
 
-func SendMessage(message, botID string, chat_id int64){
+func SendMessage(message, botID string, chat_id int64)(s string,err error){
 	client := &http.Client{}
 	telegram_id :=botID
 	var values map[string]string
@@ -80,7 +80,7 @@ func SendMessage(message, botID string, chat_id int64){
 	req,err := http.NewRequest("POST",urls,strings.NewReader(string(js)))
 	if err != nil {
 		fmt.Println("Fatal error ", err.Error())
-		os.Exit(502)
+		return "",err
 	}
 	for key,value := range values {
 		req.Header.Add(key,value)
@@ -90,8 +90,9 @@ func SendMessage(message, botID string, chat_id int64){
 	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Fatal error ", err.Error())
-		os.Exit(502)
+		return "",err
 	}
 
-	fmt.Println(string(content))
+	//fmt.Println(string(content))
+	return string(content),nil
 }
