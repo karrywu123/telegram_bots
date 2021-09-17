@@ -41,8 +41,13 @@ func recv(gi int,bots []string) {
 				fmt.Printf("我是第%d个goroutine，从管道中取出了：%s\n", gi, data)
 				select {
 				case bdata := <-botdata:
+					rdata,err:=api.SendMessage(data,bdata,chat_id)
+					if err != nil {
+						fmt.Println("Fatal error ", err.Error())
+						continue
+					}
 					fmt.Println("机器人为"+bdata+"发送的消息为",data)
-					api.SendMessage(data,bdata,chat_id)
+					fmt.Println(rdata)
 				default:
 					for _,v:=range bots{
 						botdata<-v
