@@ -151,7 +151,10 @@ func SendDocument(document, botID string, chat_id int64)(s string,err error){
 		req.Header.Add(key,value)
 	}
 	resp, err := client.Do(req)
-
+	if err != nil {
+		fmt.Println("Fatal error ", err.Error())
+		return "",err
+	}
 	defer resp.Body.Close()
 	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
